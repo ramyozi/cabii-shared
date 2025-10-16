@@ -1,5 +1,4 @@
 import { Reservation } from '../models/reservation';
-
 export interface RidePassenger {
   id: string;
   reservation: Reservation;

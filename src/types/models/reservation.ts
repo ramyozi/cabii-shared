@@ -6,7 +6,6 @@ import { ReservationStatusEnum } from '../enums/reservation-status-enum';
 import { DeliveryObject } from '../models/delivery-object';
 import { RidePassenger } from '../models/ride-passenger';
 import { ReservationEvent } from '../models/reservation-event';
-
 export interface Reservation {
   id: string;
   customer: CustomerProfile;

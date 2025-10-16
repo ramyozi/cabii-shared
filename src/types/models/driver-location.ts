@@ -1,5 +1,4 @@
 import { DriverProfile } from '../models/driver-profile';
-
 export interface DriverLocation {
   id: string;
   driver: DriverProfile;

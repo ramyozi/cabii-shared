@@ -1,5 +1,4 @@
 import { DeliveryObject } from '../models/delivery-object';
-
 export interface DeliveryReceiver {
   id: string;
   name: string;

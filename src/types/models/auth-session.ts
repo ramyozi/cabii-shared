@@ -1,5 +1,4 @@
 import { User } from '../models/user';
-
 export interface AuthSession {
   id: string;
   refreshToken: string;

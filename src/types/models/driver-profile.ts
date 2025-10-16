@@ -3,7 +3,6 @@ import { Reservation } from '../models/reservation';
 import { DriverDocument } from '../models/driver-document';
 import { DriverCommission } from '../models/driver-commission';
 import { User } from '../models/user';
-
 export interface DriverProfile {
   id: string;
   isAvailable: boolean;

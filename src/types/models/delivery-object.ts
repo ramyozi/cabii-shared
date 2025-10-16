@@ -1,6 +1,5 @@
 import { Reservation } from '../models/reservation';
 import { DeliveryReceiver } from '../models/delivery-receiver';
-
 export interface DeliveryObject {
   id: string;
   reservation: Reservation;

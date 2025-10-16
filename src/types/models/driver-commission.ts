@@ -1,6 +1,5 @@
 import { DriverProfile } from '../models/driver-profile';
 import { CommissionTypeEnum } from '../enums/commission-type-enum';
-
 export interface DriverCommission {
   id: string;
   driver: DriverProfile;

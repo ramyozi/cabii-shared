@@ -1,8 +1,11 @@
 {
-  "name": "@cabii/shared",
+  "name": "@ramyozi/cabii-shared",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "generate:shared": "ts-node --transpile-only scripts/generate-shared.ts --backend ../../cabii-backend"

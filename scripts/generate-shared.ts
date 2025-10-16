@@ -95,6 +95,23 @@ function flattenTypeTokens(typeText: string): string[] {
   return uniq(tokens.filter(isUpper));
 }
 
+/* Nettoyage des imports / décorateurs backend */
+function stripBackendStuff(text: string): string {
+  return (
+    text
+      // Retire les imports NestJS ou class-validator
+      .replace(/import\s+\{[^}]*\}\s+from\s+['"]@nestjs\/[^'"]+['"];?/g, '')
+      .replace(/import\s+\{[^}]*\}\s+from\s+['"]class-validator['"];?/g, '')
+      // Supprime les décorateurs Swagger et validation
+      .replace(/@\w+\([^)]*\)\s*/g, '')
+      // Supprime les décorateurs sans parenthèses (ex: @IsString)
+      .replace(/@\w+\s*/g, '')
+      // Nettoie les lignes vides multiples
+      .replace(/^\s*\n/gm, '')
+      .trim()
+  );
+}
+
 /* Swagger */
 async function fetchSwagger() {
   try {
@@ -205,7 +222,8 @@ async function generateFromBackend(swagger: any) {
         `export interface ${name} {\n${body}\n}`;
 
       const file = path.join(MODEL_OUT, `${toKebab(name)}.ts`);
-      await writeFileFormatted(file, code);
+      const cleaned = stripBackendStuff(code);
+      await writeFileFormatted(file, cleaned);
       console.log(`✅ Model: ${name}`);
     }
   }

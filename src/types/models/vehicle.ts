@@ -3,7 +3,6 @@ import { VehicleStatusEnum } from '../enums/vehicle-status-enum';
 import { VehicleCategory } from '../models/vehicle-category';
 import { VehicleAccessibility } from '../models/vehicle-accessibility';
 import { Reservation } from '../models/reservation';
-
 export interface Vehicle {
   id: string;
   driver: DriverProfile;
