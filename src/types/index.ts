@@ -36,6 +36,7 @@ export * from './dto/jwt-claims-dto';
 export * from './dto/list-response-dto';
 export * from './dto/package-action-dto';
 export * from './dto/passenger-on-board-dto';
+export * from './dto/pending-role-selection-response';
 export * from './dto/phone-availability-check-response-dto';
 export * from './dto/phone-availibility-check-request-dto';
 export * from './dto/refresh-auth-request-dto';

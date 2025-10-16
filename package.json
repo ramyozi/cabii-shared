@@ -1,6 +1,6 @@
 {
   "name": "@ramyozi/cabii-shared",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": {
@@ -11,8 +11,12 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
+    "generate": "ts-node --transpile-only scripts/generate-shared.ts --backend ../../cabii-backend",
     "build": "tsc -p tsconfig.json",
-    "generate:shared": "ts-node --transpile-only scripts/generate-shared.ts --backend ../../cabii-backend"
+    "generate:build": "yarn generate && yarn build",
+    "commit": "node scripts/commit.js",
+    "publish:pkg": "npm version patch && npm publish --access public",
+    "release": "yarn generate:build && yarn commit && yarn publish:pkg"
   },
   "dependencies": {
     "zod": "3.22.3"
