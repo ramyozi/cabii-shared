@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramyozi/cabii-shared"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
