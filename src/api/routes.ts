@@ -72,11 +72,19 @@ export const BackendApiRoutes = {
       methods: ['post'],
       path: '/driver-document',
     },
-    byDocumentId: {
-      methods: ['patch', 'patch', 'get', 'patch'],
+    approve: {
+      methods: ['patch'],
       path: '/driver-document/approve/{documentId}',
     },
-    byDriverId: {
+    deny: {
+      methods: ['patch'],
+      path: '/driver-document/deny/{documentId}',
+    },
+    byDocumentId: {
+      methods: ['get', 'patch'],
+      path: '/driver-document/{documentId}',
+    },
+    driverProfile: {
       methods: ['get'],
       path: '/driver-document/driver-profile/{driverId}',
     },
@@ -116,13 +124,13 @@ export const BackendApiRoutes = {
     },
   },
   userAccessibility: {
-    byFeatureId: {
+    feature: {
       methods: ['post', 'delete'],
       path: '/user-accessibility/user/{userId}/feature/{featureId}',
     },
   },
   vehicleAccessibility: {
-    byFeatureId: {
+    feature: {
       methods: ['post', 'delete'],
       path: '/vehicle-accessibility/vehicle/{vehicleId}/feature/{featureId}',
     },
@@ -132,7 +140,7 @@ export const BackendApiRoutes = {
       methods: ['post', 'get'],
       path: '/driver/{driverId}/commission',
     },
-    byId: {
+    commissionForId: {
       methods: ['put'],
       path: '/driver/{driverId}/commission/{id}',
     },
@@ -175,12 +183,20 @@ export const BackendApiRoutes = {
       path: '/reservation/{id}/completed',
     },
     active: {
-      methods: ['get', 'get'],
+      methods: ['get'],
       path: '/reservation/customer/{customerId}/active',
     },
+    activeForPath: {
+      methods: ['get'],
+      path: '/reservation/driver/{driverId}/active',
+    },
     history: {
-      methods: ['get', 'get'],
+      methods: ['get'],
       path: '/reservation/customer/{customerId}/history',
+    },
+    historyForPath: {
+      methods: ['get'],
+      path: '/reservation/driver/{driverId}/history',
     },
     arrived: {
       methods: ['patch'],
@@ -214,13 +230,13 @@ export const BackendApiRoutes = {
       methods: ['get'],
       path: '/reservation/{id}/events',
     },
-    byDriverId: {
+    driver: {
       methods: ['get'],
       path: '/reservation/available/driver/{driverId}',
     },
   },
   driverLocation: {
-    byDriverId: {
+    driver: {
       methods: ['post'],
       path: '/driver-location/driver/{driverId}',
     },

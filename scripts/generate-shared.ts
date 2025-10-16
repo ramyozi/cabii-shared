@@ -306,30 +306,83 @@ async function generateRoutes(openapi: any) {
     console.warn('⚠️ No Swagger paths; routes not generated.');
     return;
   }
+  function detectName(rawTag: string, pathKey: string) {
+    const tag = toCamel(rawTag.toLowerCase());
+    const seg = pathKey.split('/').filter(Boolean);
+    const last = seg[seg.length - 1] || '';
+    const isParam = (s: string) => s.startsWith('{') && s.endsWith('}');
+
+    if (isParam(last)) {
+      const param = last.slice(1, -1);
+      const prev = seg[seg.length - 2] || '';
+      if (
+        prev &&
+        !isParam(prev) &&
+        prev.toLowerCase() !== rawTag.toLowerCase()
+      ) {
+        // /.../<action>/{param} → <action> (approve, deny, etc.)
+        return toCamel(prev);
+      }
+      // /.../{param} → byParam
+      return `by${cap(param)}`;
+    }
+    if (last.toLowerCase() === rawTag.toLowerCase() || last === tag)
+      return 'root';
+    return toCamel(last);
+  }
+
   const grouped: Record<string, any> = {};
 
   for (const [pathKey, methods] of Object.entries(openapi.paths)) {
     for (const [method, def] of Object.entries(methods as any)) {
       const rawTag = (def as any).tags?.[0] || 'general';
       const tag = toCamel(rawTag.toLowerCase());
+      const name = detectName(rawTag, pathKey);
+
       grouped[tag] = grouped[tag] || {};
+      if (!grouped[tag][name]) {
+        grouped[tag][name] = { methods: [], path: pathKey };
+      } else if (grouped[tag][name].path !== pathKey) {
+        // Si même nom mais chemin différent, essayer un nom alternatif stable
+        const seg = pathKey.split('/').filter(Boolean);
+        const last = seg[seg.length - 1] || '';
+        const isParam = (s: string) => s.startsWith('{') && s.endsWith('}');
+        const prev = seg[seg.length - 2] || '';
+        let alt = name;
 
-      const segments = pathKey.split('/').filter(Boolean);
-      const last = segments[segments.length - 1] || '';
-      let name = '';
+        if (
+          isParam(last) &&
+          prev &&
+          !isParam(prev) &&
+          prev.toLowerCase() !== rawTag.toLowerCase()
+        ) {
+          alt = toCamel(prev);
+        } else if (isParam(last)) {
+          const param = last.slice(1, -1);
+          alt = `by${cap(param)}`;
+        } else {
+          alt = toCamel(last);
+        }
 
-      if (last.startsWith('{')) {
-        const paramName = last.replace(/[{}]/g, '');
-        name = `by${cap(paramName)}`;
-      } else if (last === rawTag || last === tag) {
-        name = 'root';
-      } else {
-        name = toCamel(last);
+        if (grouped[tag][alt] && grouped[tag][alt].path !== pathKey) {
+          const param = isParam(last) ? last.slice(1, -1) : 'Path';
+          alt = `${alt}For${cap(param)}`;
+        }
+
+        if (!grouped[tag][alt])
+          grouped[tag][alt] = { methods: [], path: pathKey };
+        if (
+          !grouped[tag][alt].methods.includes((method as string).toLowerCase())
+        ) {
+          grouped[tag][alt].methods.push((method as string).toLowerCase());
+        }
+        continue;
       }
 
-      if (!grouped[tag][name])
-        grouped[tag][name] = { methods: [], path: pathKey };
-      grouped[tag][name].methods.push((method as string).toLowerCase());
+      const m = (method as string).toLowerCase();
+      if (!grouped[tag][name].methods.includes(m)) {
+        grouped[tag][name].methods.push(m);
+      }
     }
   }
 
