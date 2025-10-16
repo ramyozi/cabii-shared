@@ -1,4 +1,3 @@
-import { Date } from '../models/date';
 import { RoleEnum } from '../enums/role-enum';
 import { DriverProfile } from '../models/driver-profile';
 import { CustomerProfile } from '../models/customer-profile';
@@ -13,9 +12,9 @@ export interface User {
   email: string;
   phone: string;
   password: string | undefined;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
   role: RoleEnum;
   driverProfile: DriverProfile | undefined;
   customerProfile: CustomerProfile | undefined;

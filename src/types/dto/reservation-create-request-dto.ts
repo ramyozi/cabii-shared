@@ -1,5 +1,4 @@
 import { ReservationTypeEnum } from '../enums/reservation-type-enum';
-import { Date } from '../models/date';
 
 export class ReservationCreateRequestDto {
   customerId: string;
@@ -10,5 +9,5 @@ export class ReservationCreateRequestDto {
   pickupLng: number;
   dropoffLat: number;
   dropoffLng: number;
-  scheduledAt: Date | undefined;
+  scheduledAt: string | undefined;
 }

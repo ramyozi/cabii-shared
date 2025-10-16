@@ -1,5 +1,4 @@
 import { DeliveryObject } from '../models/delivery-object';
-import { Date } from '../models/date';
 
 export interface DeliveryReceiver {
   id: string;
@@ -7,6 +6,6 @@ export interface DeliveryReceiver {
   phone: string;
   email: string | undefined;
   objects: DeliveryObject[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

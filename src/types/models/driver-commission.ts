@@ -1,6 +1,5 @@
 import { DriverProfile } from '../models/driver-profile';
 import { CommissionTypeEnum } from '../enums/commission-type-enum';
-import { Date } from '../models/date';
 
 export interface DriverCommission {
   id: string;
@@ -9,6 +8,6 @@ export interface DriverCommission {
   percentage: number | undefined;
   fixedFee: number | undefined;
   active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

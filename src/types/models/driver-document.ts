@@ -1,6 +1,5 @@
 import { DriverDocumentTypeEnum } from '../enums/driver-document-type-enum';
 import { DriverDocumentStatusEnum } from '../enums/driver-document-status-enum';
-import { Date } from '../models/date';
 import { DriverProfile } from '../models/driver-profile';
 
 export interface DriverDocument {
@@ -8,8 +7,8 @@ export interface DriverDocument {
   type: DriverDocumentTypeEnum;
   fileUrl: string;
   status: DriverDocumentStatusEnum;
-  expiryDate: Date | undefined;
+  expiryDate: string | undefined;
   driver: DriverProfile;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

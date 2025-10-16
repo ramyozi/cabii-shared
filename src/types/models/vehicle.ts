@@ -1,6 +1,5 @@
 import { DriverProfile } from '../models/driver-profile';
 import { VehicleStatusEnum } from '../enums/vehicle-status-enum';
-import { Date } from '../models/date';
 import { VehicleCategory } from '../models/vehicle-category';
 import { VehicleAccessibility } from '../models/vehicle-accessibility';
 import { Reservation } from '../models/reservation';
@@ -15,7 +14,7 @@ export interface Vehicle {
   chassisNumber: string;
   year: number | undefined;
   status: VehicleStatusEnum;
-  insuranceExpiryDate: Date | undefined;
+  insuranceExpiryDate: string | undefined;
   insuranceFileUrl: string | undefined;
   category: VehicleCategory;
   accessibilityOptions: VehicleAccessibility[];

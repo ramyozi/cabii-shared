@@ -1,12 +1,11 @@
-import { Date } from '../models/date';
 import { User } from '../models/user';
 
 export interface AuthSession {
   id: string;
   refreshToken: string;
-  expiresAt: Date;
+  expiresAt: string;
   user: User;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   isRevoked: boolean;
 }

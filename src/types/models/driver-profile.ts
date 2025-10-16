@@ -3,7 +3,6 @@ import { Reservation } from '../models/reservation';
 import { DriverDocument } from '../models/driver-document';
 import { DriverCommission } from '../models/driver-commission';
 import { User } from '../models/user';
-import { Date } from '../models/date';
 
 export interface DriverProfile {
   id: string;
@@ -19,5 +18,5 @@ export interface DriverProfile {
   totalRatings: number;
   currentLat: number | undefined;
   currentLng: number | undefined;
-  lastSeenAt: Date | undefined;
+  lastSeenAt: string | undefined;
 }

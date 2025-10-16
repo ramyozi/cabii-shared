@@ -1,5 +1,4 @@
 import { DriverProfile } from '../models/driver-profile';
-import { Date } from '../models/date';
 
 export interface DriverLocation {
   id: string;
@@ -8,5 +7,5 @@ export interface DriverLocation {
   lng: number;
   headingDeg: number | undefined;
   speedKph: number | undefined;
-  createdAt: Date;
+  createdAt: string;
 }

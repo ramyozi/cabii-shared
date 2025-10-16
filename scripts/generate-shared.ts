@@ -64,15 +64,38 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const isUpper = (t: string) => /^[A-Z][A-Za-z0-9_]*$/.test(t);
 const isEnumName = (t: string) => /Enum$/.test(t);
-const baseNameFromArray = (t: string) =>
-  t.endsWith('[]') ? t.slice(0, -2) : t;
 const uniq = <T>(arr: T[]) => Array.from(new Set(arr));
 
-function flattenTypeTokens(typeText: string): string[] {
-  return uniq(typeText.split(/[^A-Za-z0-9_]/g).filter(isUpper));
+/* types intégrés à ne pas importer */
+const BUILTIN_TYPES = new Set([
+  'Date',
+  'Record',
+  'Array',
+  'Map',
+  'Set',
+  'Promise',
+  'Omit',
+  'Pick',
+  'Partial',
+  'Required',
+  'Readonly',
+]);
+
+/* normalise le texte de type pour le front: Date -> string ISO */
+function normalizeType(t: string): string {
+  // ex: Date | null, Date[], Record<string, any>
+  // remplace Date par string (ISO)
+  return t
+    .replace(/\bDate\b/g, 'string')
+    .replace(/\bRecord<\s*([^,>]+)\s*,\s*([^>]+)\s*>\b/g, 'Record<$1, $2>');
 }
 
-/* Récupération Swagger */
+function flattenTypeTokens(typeText: string): string[] {
+  const tokens = typeText.split(/[^A-Za-z0-9_]/g).filter(Boolean);
+  return uniq(tokens.filter(isUpper));
+}
+
+/* Swagger */
 async function fetchSwagger() {
   try {
     const res = await axios.get(SWAGGER_URL);
@@ -86,7 +109,7 @@ async function fetchSwagger() {
   }
 }
 
-/* Génération depuis le backend (enums, models, dtos) */
+/* Génération */
 async function generateFromBackend(swagger: any) {
   console.log('📁 BACKEND_ROOT:', BACKEND_ROOT);
   console.log('📁 BACKEND_SRC :', BACKEND_SRC);
@@ -115,15 +138,14 @@ async function generateFromBackend(swagger: any) {
   ensure(DTO_OUT);
 
   const norm = (p: string) => p.replace(/\\/g, '/');
-  const allSourceFiles = project.getSourceFiles();
-
-  const enumGlobs = allSourceFiles.filter((f) =>
+  const files = project.getSourceFiles();
+  const enumGlobs = files.filter((f) =>
     norm(f.getFilePath()).includes('/domain/enums/'),
   );
-  const modelGlobs = allSourceFiles.filter((f) =>
+  const modelGlobs = files.filter((f) =>
     norm(f.getFilePath()).includes('/domain/entity/'),
   );
-  const dtoGlobs = allSourceFiles.filter((f) =>
+  const dtoGlobs = files.filter((f) =>
     norm(f.getFilePath()).includes('/application/dto/'),
   );
 
@@ -156,10 +178,10 @@ async function generateFromBackend(swagger: any) {
       const name = cls.getName();
       if (!name) continue;
 
-      const props = cls.getProperties().map((p) => ({
-        name: p.getName(),
-        type: p.getType().getText(p),
-      }));
+      const props = cls.getProperties().map((p) => {
+        const raw = p.getType().getText(p);
+        return { name: p.getName(), type: normalizeType(raw) };
+      });
 
       const referenced = new Set<string>();
       props.forEach(({ type }) =>
@@ -169,6 +191,7 @@ async function generateFromBackend(swagger: any) {
 
       const importLines: string[] = [];
       referenced.forEach((t) => {
+        if (BUILTIN_TYPES.has(t)) return;
         if (enumNames.has(t) || isEnumName(t)) {
           importLines.push(`import { ${t} } from '../enums/${toKebab(t)}';`);
         } else if (isUpper(t)) {
@@ -187,23 +210,40 @@ async function generateFromBackend(swagger: any) {
     }
   }
 
-  // DTOs (héritage sans generics) + fallback Swagger si classe vide
+  // DTOs
   const swaggerSchemas: Record<string, any> =
     swagger?.components?.schemas || {};
+  const NEST_EXCEPTIONS = new Set([
+    'HttpException',
+    'BadRequestException',
+    'UnauthorizedException',
+    'ForbiddenException',
+    'NotFoundException',
+    'ConflictException',
+    'InternalServerErrorException',
+  ]);
 
   for (const source of dtoGlobs) {
     for (const cls of source.getClasses()) {
       const name = cls.getName();
       if (!name) continue;
 
-      let base = cls.getExtends()?.getExpression().getText() || null;
+      // ignorer les Exceptions côté shared
+      const baseName = cls.getExtends()?.getExpression()?.getText() || null;
+      if (
+        name.endsWith('Exception') ||
+        (baseName && NEST_EXCEPTIONS.has(baseName))
+      ) {
+        continue;
+      }
+
+      let base = baseName;
 
       let rawProps = cls.getProperties().map((prop) => ({
         name: prop.getName(),
-        type: prop.getType().getText(prop),
+        type: normalizeType(prop.getType().getText(prop)),
       }));
 
-      // Si la classe est vide, on tente d'inférer "data" via Swagger
       if ((!rawProps || rawProps.length === 0) && swaggerSchemas[name]) {
         const s = swaggerSchemas[name];
         const dataSchema = s?.properties?.data;
@@ -216,7 +256,6 @@ async function generateFromBackend(swagger: any) {
         }
       }
 
-      // On ne supprime les champs de base que pour les DTOs dérivés (pas pour BaseResponseDto/ListResponseDto eux-mêmes)
       const isDerived = !!base;
       const props = rawProps.filter((p) => {
         if (!isDerived) return true;
@@ -233,10 +272,16 @@ async function generateFromBackend(swagger: any) {
       if (base) referenced.delete(base);
 
       referenced.forEach((t) => {
+        if (BUILTIN_TYPES.has(t)) return;
         if (enumNames.has(t) || isEnumName(t)) {
           imports.add(`import { ${t} } from '../enums/${toKebab(t)}';`);
-        } else if (isUpper(t) && !/Dto$/.test(t) && !/ResponseDto$/.test(t)) {
-          imports.add(`import { ${t} } from '../models/${toKebab(t)}';`);
+        } else if (isUpper(t)) {
+          // si la ref ressemble à un DTO (se termine par Dto), on importe depuis dto
+          if (/Dto$/.test(t) || /ResponseDto$/.test(t)) {
+            imports.add(`import { ${t} } from './${toKebab(t)}';`);
+          } else {
+            imports.add(`import { ${t} } from '../models/${toKebab(t)}';`);
+          }
         }
       });
 
@@ -255,7 +300,7 @@ async function generateFromBackend(swagger: any) {
   }
 }
 
-/* Génération des routes à partir de Swagger */
+/* Routes */
 async function generateRoutes(openapi: any) {
   if (!openapi?.paths) {
     console.warn('⚠️ No Swagger paths; routes not generated.');
@@ -293,7 +338,7 @@ async function generateRoutes(openapi: any) {
   console.log('✅ Routes generated.');
 }
 
-/* Génération de l’index des exports */
+/* Index */
 async function generateIndex() {
   const list = (dir: string) =>
     fs.existsSync(dir)
@@ -317,7 +362,7 @@ async function generateIndex() {
   console.log('✅ Index file generated.');
 }
 
-/* MAIN */
+/* Main */
 (async () => {
   console.log('🚀 Generating shared (enums, models, dtos, routes)…');
   console.log('⏱  CWD            :', process.cwd());

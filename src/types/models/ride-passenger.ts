@@ -1,5 +1,4 @@
 import { Reservation } from '../models/reservation';
-import { Date } from '../models/date';
 
 export interface RidePassenger {
   id: string;
@@ -7,6 +6,6 @@ export interface RidePassenger {
   name: string;
   age: number;
   hasReducedMobility: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -1,5 +1,4 @@
 import { AccessibilityCategoryEnum } from '../enums/accessibility-category-enum';
-import { Date } from '../models/date';
 
 export interface AccessibilityFeature {
   id: string;
@@ -7,6 +6,6 @@ export interface AccessibilityFeature {
   description: string | undefined;
   category: AccessibilityCategoryEnum;
   icon: string | undefined;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
